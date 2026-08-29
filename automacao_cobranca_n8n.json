@@ -1,0 +1,193 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "322edbe6-4364-4709-86c8-0f406d95cdfb",
+      "name": "Diariamente às 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  p.id_parcela,\n  c.nome,\n  c.email,\n  p.valor_emprestimo,\n  p.vencimento_parcela,\n  p.status_pagamento\nFROM parcelas p\nJOIN emprestimos e\n  ON p.id_emprestimo = e.id_emprestimo\nJOIN clientes c\n  ON e.id_cliente = c.id_cliente\nWHERE p.vencimento_parcela = CURDATE()\n  AND p.status_pagamento <> 1\n  AND NOT EXISTS (\n    SELECT 1\n    FROM notificacoes n\n    WHERE n.id_parcela = p.id_parcela\n      AND n.tipo = 'COBRANCA'\n      AND n.status = 'ENVIADO'\n  );",
+        "options": {}
+      },
+      "id": "720a1d98-2ee6-4b90-b30a-44f53274d26c",
+      "name": "Consultar Parcelas Pendentes",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -192,
+        -80
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "AJtWpbvtrJCX9wn9",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere o corpo de um e-mail de cobrança profissional e cordial, em português do Brasil, usando SOMENTE os dados abaixo. Não invente informações e não inclua CPF, número de conta, senha ou dados sensíveis. Não afirme que o cliente deixou de pagar; apenas informe que há uma parcela pendente segundo o sistema.\n\nDados da parcela:\n- Nome do cliente: {{ $json.nome }}\n- Valor da parcela: {{ $json.valor_emprestimo }}\n- Data de vencimento: {{ $json.vencimento_parcela }}\n\nO e-mail deve: cumprimentar o cliente pelo nome; informar que existe uma parcela de empréstimo pendente; informar o valor da parcela; informar a data de vencimento; solicitar que o cliente verifique a situação do pagamento; e informar que, caso o pagamento já tenha sido realizado, o cliente pode desconsiderar a mensagem. Responda apenas com o texto do e-mail.",
+        "options": {
+          "systemMessage": "Você é um assistente que redige mensagens de cobrança bancária profissionais e cordiais. Sua única função é gerar o texto do e-mail com base nos dados fornecidos. Você NÃO decide se o cliente pagou ou não — essa informação já foi determinada pelo banco de dados. Nunca invente valores, datas ou dados pessoais além dos fornecidos."
+        }
+      },
+      "id": "78b4d3ab-1f81-493d-8d8b-861855688e79",
+      "name": "Gerar Mensagem de Cobrança",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        32,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "908967da-3d21-4e51-8725-40dd08262007",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Consultar Parcelas Pendentes').item.json.email }}",
+        "subject": "Parcela de empréstimo pendente",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "7245503b-d57c-4e05-90c3-5defad2e2066",
+      "name": "Enviar E-mail de Cobrança",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -80
+      ],
+      "webhookId": "2af4953c-33ff-41e0-a0df-12a00178bdb2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO notificacoes (\n  id_parcela,\n  tipo,\n  email_destinatario,\n  data_envio,\n  status\n) VALUES (\n  $1,\n  'COBRANCA',\n  $2,\n  NOW(),\n  'ENVIADO'\n);",
+        "options": {
+          "queryReplacement": "={{ $('Consultar Parcelas Pendentes').item.json.id_parcela }},{{ $('Consultar Parcelas Pendentes').item.json.email }}"
+        }
+      },
+      "id": "d9cf8a6d-571d-4cb8-8658-b7111ea84b01",
+      "name": "Registrar Notificação Enviada",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        592,
+        -80
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "AJtWpbvtrJCX9wn9",
+          "name": "MySQL account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Diariamente às 08:00": {
+      "main": [
+        [
+          {
+            "node": "Consultar Parcelas Pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Parcelas Pendentes": {
+      "main": [
+        [
+          {
+            "node": "Gerar Mensagem de Cobrança",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Mensagem de Cobrança": {
+      "main": [
+        [
+          {
+            "node": "Enviar E-mail de Cobrança",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gerar Mensagem de Cobrança",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar E-mail de Cobrança": {
+      "main": [
+        [
+          {
+            "node": "Registrar Notificação Enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ab3f4229-d3d9-404e-a923-5cb825a51b68",
+  "meta": {
+    "instanceId": "2701dd61e8e6ab29f65fd42c3550271e805bd4e713fde7cf0bb5fcd802f12c95"
+  },
+  "nodeGroups": [],
+  "id": "KRzC6pjU8TvYckD8",
+  "tags": []
+}
