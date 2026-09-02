@@ -18,7 +18,7 @@ identificar parcelas em atraso e enviar notificações aos clientes.
 -Funcionalidades
 
 - Cadastro para os clientes
-- Cadastro para os empréstimos
+- Cadastro de empréstimos
 - Controle de parcelas
 - Registro de pagamentos
 - Identificação de parcelas em atraso
