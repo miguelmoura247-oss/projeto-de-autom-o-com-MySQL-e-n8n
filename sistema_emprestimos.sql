@@ -37,7 +37,7 @@ CREATE TABLE `clientes` (
 
 LOCK TABLES `clientes` WRITE;
 /*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
-INSERT INTO `clientes` VALUES (1,'00000000000','João Pereira','joao@gmail.com'),(2,'00000000001','Maria Clara','maria@gmail.com'),(3,'00000000002','Eduardo Silvestre','silvestre@gmail.com'),(4,'00000000003','Eduarda Silva','Eduarda@gmail.com'),(5,'00000000004','Carlos Silva','carlos.silva@gmail.com'),(6,'00000000005','Ana Souza','ana.souza@hotmail.com'),(7,'00000000006','Lucas Oliveira','lucas.oliveira@outlook.com'),(8,'00000000007','Beatriz Santos','beatriz.santos@yahoo.com'),(9,'00000000008','Ricardo Lima','ricardo.lima@gmail.com'),(10,'00000000009','Juliana Costa','juliana.costa@hotmail.com');
+INSERT INTO `clientes` VALUES (1,'00000000000','João Pereira','Ficticio@email.comm'),(2,'00000000001','Maria Clara','Ficticio@email.comm'),(3,'00000000002','Eduardo Silvestre','Ficticio@email.comm'),(4,'00000000003','Eduarda Silva','Ficticio@email.comm'),(5,'00000000004','Carlos Silva','Ficticio@email.comm'),(6,'00000000005','Ana Souza','Ficticio@email.comm'),(7,'00000000006','Lucas Oliveira','Ficticio@email.comm'),(8,'00000000007','Beatriz Santos','Ficticio@email.comm'),(9,'00000000008','Ricardo Lima','Ficticio@email.comm'),(10,'00000000009','Juliana Costa','Ficticio@email.comm');
 /*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -80,14 +80,13 @@ DROP TABLE IF EXISTS `notificacoes`;
 CREATE TABLE `notificacoes` (
   `id_notificacao` int NOT NULL AUTO_INCREMENT,
   `id_parcela` int NOT NULL,
-  `tipo` varchar(50) NOT NULL,
   `email_destinatario` varchar(255) NOT NULL,
   `data_envio` datetime NOT NULL,
   `status` varchar(20) NOT NULL,
   PRIMARY KEY (`id_notificacao`),
   KEY `id_parcela` (`id_parcela`),
   CONSTRAINT `notificacoes_ibfk_1` FOREIGN KEY (`id_parcela`) REFERENCES `parcelas` (`id_parcela`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -96,6 +95,7 @@ CREATE TABLE `notificacoes` (
 
 LOCK TABLES `notificacoes` WRITE;
 /*!40000 ALTER TABLE `notificacoes` DISABLE KEYS */;
+INSERT INTO `notificacoes` VALUES (1,2,'Ficticio@email.comm','2026-09-01 22:57:37','ENVIADO');
 /*!40000 ALTER TABLE `notificacoes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -137,4 +137,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-28 23:42:36
+-- Dump completed on 2026-09-01 23:16:50
